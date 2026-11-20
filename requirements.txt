@@ -1,0 +1,5 @@
+# Quantum core.
+qiskit==2.5.2
+qiskit-aer==0.17.2
+numpy>=2.0
+pytest==9.1.1

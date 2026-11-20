@@ -1,0 +1,10 @@
+[project]
+name = "qsecure"
+version = "0.1.0"
+description = "Quantum-Inspired Cyber Threat Detection for Digital Signature Security"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["qsecure"]
+addopts = "-q --strict-markers --doctest-modules"
