@@ -1,6 +1,40 @@
 """The six adversaries and the randomness-isolation check that keeps their rates honest.
+
+Five mount on :class:`~qsecure.protocol.session.QDSSession` through its
+keyword-only seams; :mod:`qsecure.attacks.unauthorised` needs no seam because
+verification touches none.
+
+Examples
+--------
+>>> import numpy as np
+>>> from qsecure.attacks import assert_attack_isolated, signer_probe
+>>> from qsecure.attacks import OutsideForger
+>>> assert_attack_isolated(OutsideForger, signer_probe()).isolated
+True
+
+>>> from qsecure.attacks import agrees_within
+>>> print(agrees_within(96, 300, 0.345566).summary())
+AGREES: 96/300 = 0.320000 vs predicted 0.345566 (z = -0.93, band 4.0 se = 0.109824)
 """
 
+from qsecure.attacks.channel import (
+    IDEAL_TENSOR,
+    PAULI_AXES,
+    AttackDecision,
+    ChannelAttack,
+    CorrelationTensor,
+    DepolarisingChannel,
+    InterceptResend,
+    KeptShareSwap,
+    attribution_survives_symmetrisation,
+    chsh_from_tensor,
+    collapse_tensor,
+    depolarising_tensor,
+    measure_chsh,
+    measure_qber,
+    payload_line_is_unwatched,
+    qber_from_tensor,
+)
 from qsecure.attacks.forgery import (
     OUTSIDE_FORGER_MISMATCH_RATE,
     RECIPIENT_FORGER_MISMATCH_RATE,
@@ -10,6 +44,21 @@ from qsecure.attacks.forgery import (
     RecipientForger,
     measure_outside_forgery,
     measure_recipient_forgery,
+)
+from qsecure.attacks.impersonation import (
+    MEASURED,
+    ImpersonationMeasurement,
+    ImpersonationScope,
+    ImpersonationTrial,
+    Impersonator,
+    MeasuredRun,
+    distributor_probe,
+    impersonation_seams,
+    matched_sets_identical,
+    measure_impersonation,
+    run_impersonation,
+    shipped_summary,
+    signing_probe,
 )
 from qsecure.attacks.isolation import (
     DEFAULT_ATTACK_SEEDS,
@@ -79,6 +128,20 @@ from qsecure.attacks.statistics import (
     two_sided_z,
     wilson_bounds,
 )
+from qsecure.attacks.unauthorised import (
+    FABRICATED_MATCHED_FRACTION,
+    FABRICATED_MISMATCH_RATE,
+    TAPPED_LINK_QBER,
+    UnauthorisedFabricator,
+    UnauthorisedHolder,
+    UnauthorisedMeasurement,
+    UnauthorisedTrial,
+    fabricator_probe,
+    measure_unauthorised,
+    run_unauthorised,
+    tapped_record_reduction,
+    verdict_digest,
+)
 
 __all__ = [
     "DEFAULT_ATTACK_SEEDS",
@@ -103,9 +166,11 @@ __all__ = [
     "require_distinct_streams",
     "same_stream",
     "stream_fingerprint",
+    "distributor_probe",
     "forwarder_probe",
     "replay_probe",
     "signer_probe",
+    "signing_probe",
     "starvation_probe",
     "Z_90",
     "Z_95",
@@ -124,6 +189,17 @@ __all__ = [
     "RecipientForger",
     "measure_outside_forgery",
     "measure_recipient_forgery",
+    "MEASURED",
+    "ImpersonationMeasurement",
+    "ImpersonationScope",
+    "ImpersonationTrial",
+    "Impersonator",
+    "MeasuredRun",
+    "impersonation_seams",
+    "matched_sets_identical",
+    "measure_impersonation",
+    "run_impersonation",
+    "shipped_summary",
     "COUNTS_AS_RECEIVED",
     "COUNTS_AS_SIGNED",
     "COUNTS_NONE",
@@ -138,6 +214,22 @@ __all__ = [
     "measure_shared_identifier_self_denial",
     "measure_straight_replay",
     "replay_capture",
+    "IDEAL_TENSOR",
+    "PAULI_AXES",
+    "AttackDecision",
+    "ChannelAttack",
+    "CorrelationTensor",
+    "DepolarisingChannel",
+    "InterceptResend",
+    "KeptShareSwap",
+    "attribution_survives_symmetrisation",
+    "chsh_from_tensor",
+    "collapse_tensor",
+    "depolarising_tensor",
+    "measure_chsh",
+    "measure_qber",
+    "payload_line_is_unwatched",
+    "qber_from_tensor",
     "CountStarver",
     "StarvationDecision",
     "StarvationMeasurement",
@@ -149,4 +241,16 @@ __all__ = [
     "measure_starvation",
     "pooled_branch_requirement",
     "probe_messages",
+    "FABRICATED_MATCHED_FRACTION",
+    "FABRICATED_MISMATCH_RATE",
+    "TAPPED_LINK_QBER",
+    "UnauthorisedFabricator",
+    "UnauthorisedHolder",
+    "UnauthorisedMeasurement",
+    "UnauthorisedTrial",
+    "fabricator_probe",
+    "measure_unauthorised",
+    "run_unauthorised",
+    "tapped_record_reduction",
+    "verdict_digest",
 ]

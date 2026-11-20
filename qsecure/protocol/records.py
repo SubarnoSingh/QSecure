@@ -5,31 +5,31 @@ positions where it matches the declared basis (counting unmatched ones drives
 rates to ``1/3``). Records carry provenance (``symmetrised``, ``session_id``)
 but never name a signer: channel authentication is assumed.
 
->>> from qsecure.protocol.analysis import (  # doctest: +SKIP
+>>> from qsecure.protocol.analysis import (
 ...     averaged_repudiation_bound, repudiation_bound)
->>> from qsecure.protocol.params import (  # doctest: +SKIP
+>>> from qsecure.protocol.params import (
 ...     DEFAULT_PARAMS, UNSYMMETRISED_FORGER_RATE_THREE_BASIS)
->>> from qsecure.protocol.records import RecipientRecord  # doctest: +SKIP
+>>> from qsecure.protocol.records import RecipientRecord
 
 The unmatched-position bug rate sits above both thresholds:
 
->>> UNSYMMETRISED_FORGER_RATE_THREE_BASIS == 1 / 3  # doctest: +SKIP
+>>> UNSYMMETRISED_FORGER_RATE_THREE_BASIS == 1 / 3
 True
->>> UNSYMMETRISED_FORGER_RATE_THREE_BASIS > DEFAULT_PARAMS.s_v  # doctest: +SKIP
+>>> UNSYMMETRISED_FORGER_RATE_THREE_BASIS > DEFAULT_PARAMS.s_v
 True
->>> DEFAULT_PARAMS.s_a, DEFAULT_PARAMS.s_v  # doctest: +SKIP
+>>> DEFAULT_PARAMS.s_a, DEFAULT_PARAMS.s_v
 (0.015625, 0.0625)
 
 A partial impersonator's matched QBER is ``1/2``:
 
->>> 0.5 > DEFAULT_PARAMS.s_v > DEFAULT_PARAMS.s_a > 0  # doctest: +SKIP
+>>> 0.5 > DEFAULT_PARAMS.s_v > DEFAULT_PARAMS.s_a > 0
 True
 
 Measured impersonation rows (full impersonation is accepted; it is outside the
 authenticated-channel assumption):
 
->>> from qsecure.attacks.impersonation import shipped_summary  # doctest: +SKIP
->>> for row in shipped_summary():  # doctest: +SKIP
+>>> from qsecure.attacks.impersonation import shipped_summary
+>>> for row in shipped_summary():
 ...     print(row)
 none L=192 n=200: accepted 200/200, r_Bob=0.0000, r_Charlie=0.0000
 full L=192 n=200: accepted 200/200, r_Bob=0.0000, r_Charlie=0.0000
@@ -38,23 +38,23 @@ distribution L=192 n=200: accepted 0/200, r_Bob=0.5031, r_Charlie=0.4997
 
 The ``M``-averaged figure vs the per-run figure at the expected ``M``:
 
->>> averaged = averaged_repudiation_bound(  # doctest: +SKIP
+>>> averaged = averaged_repudiation_bound(
 ...     DEFAULT_PARAMS, signer_sees_recipient_bases=False)
->>> f"{averaged:.1e}"  # doctest: +SKIP
+>>> f"{averaged:.1e}"
 '6.9e-10'
->>> f"{repudiation_bound(DEFAULT_PARAMS, matched_records=76800):.1e}"  # doctest: +SKIP
+>>> f"{repudiation_bound(DEFAULT_PARAMS, matched_records=76800):.1e}"
 '6.9e-10'
 
 Provenance fields:
 
->>> record = RecipientRecord.from_measurements("Bob", 0, ["X", "Z"], [1, -1])  # doctest: +SKIP
->>> record.symmetrised  # doctest: +SKIP
+>>> record = RecipientRecord.from_measurements("Bob", 0, ["X", "Z"], [1, -1])
+>>> record.symmetrised
 False
->>> sorted(record.to_dict())  # doctest: +SKIP
+>>> sorted(record.to_dict())
 ['entries', 'message_bit', 'party', 'session_id', 'symmetrised']
->>> record.session_id is None  # doctest: +SKIP
+>>> record.session_id is None
 True
->>> record.with_session_id("9f3c").session_id  # doctest: +SKIP
+>>> record.with_session_id("9f3c").session_id
 '9f3c'
 
 .. _recipient-view:
@@ -62,9 +62,9 @@ True
 :class:`RecipientView` is one recipient's holdings for one bit; nothing of the
 counterpart is reachable from it:
 
->>> from qsecure.protocol.params import Party  # doctest: +SKIP
->>> from qsecure.protocol.records import RecipientRecord, recipient_views  # doctest: +SKIP
->>> raw = {  # doctest: +SKIP
+>>> from qsecure.protocol.params import Party
+>>> from qsecure.protocol.records import RecipientRecord, recipient_views
+>>> raw = {
 ...     0: {
 ...         Party.BOB: RecipientRecord.from_measurements(
 ...             "Bob", 0, ["X", "Z"], [1, -1]),
@@ -72,7 +72,7 @@ counterpart is reachable from it:
 ...             "Charlie", 0, ["Y", "Y"], [-1, 1]),
 ...     }
 ... }
->>> post = {  # doctest: +SKIP
+>>> post = {
 ...     0: {
 ...         Party.BOB: RecipientRecord.from_measurements(
 ...             "Bob", 0, ["X", "Y"], [1, 1], symmetrised=True),
@@ -80,14 +80,14 @@ counterpart is reachable from it:
 ...             "Charlie", 0, ["Y", "Z"], [-1, -1], symmetrised=True),
 ...     }
 ... }
->>> views = recipient_views(0, raw_records=raw, records=post)  # doctest: +SKIP
->>> bob = views[Party.BOB]  # doctest: +SKIP
->>> bob.party, len(bob), bob.matched_count  # doctest: +SKIP
+>>> views = recipient_views(0, raw_records=raw, records=post)
+>>> bob = views[Party.BOB]
+>>> bob.party, len(bob), bob.matched_count
 (<Party.BOB: 'Bob'>, 2, None)
->>> {record.party for record in (bob.raw_record, bob.record)}  # doctest: +SKIP
+>>> {record.party for record in (bob.raw_record, bob.record)}
 {<Party.BOB: 'Bob'>}
->>> import dataclasses  # doctest: +SKIP
->>> sorted(field.name for field in dataclasses.fields(bob))  # doctest: +SKIP
+>>> import dataclasses
+>>> sorted(field.name for field in dataclasses.fields(bob))
 ['matched_count', 'message_bit', 'party', 'raw_record', 'record']
 """
 
