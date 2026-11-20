@@ -1,50 +1,8 @@
-"""Single point of control for randomness in the QSecure quantum core.
+"""Single point of control for randomness.
 
-Every function in this project that consumes randomness accepts a keyword-only
-``rng`` argument and resolves it here. Nothing anywhere in the codebase may call
-``numpy.random.<function>`` at module level or use the stdlib :mod:`random`
-module, because both draw from hidden global state: results would not be
-reproducible, and the Phase 5 evaluation (ROC curves, detection rates) would not
-be defensible.
-
-The rule is therefore:
-
-.. code-block:: python
-
-    def something(..., *, rng: np.random.Generator | None = None) -> ...:
-        generator = resolve_rng(rng)
-        ...  # use `generator` exclusively
-
-Callers get reproducibility by constructing one generator and threading it
-through a whole experiment::
-
-    rng = np.random.default_rng(20260141)
-    outcome_a = projective_measure(state, 0, PauliBasis.Z, rng=rng)
-    outcome_b = projective_measure(state, 1, PauliBasis.X, rng=rng)
-
-Note that passing ``rng=None`` is *not* a bug -- it is the documented "give me
-fresh entropy" path used in interactive demos. Only the evaluation harness is
-required to seed explicitly.
-
-Scalar seeds from the outside world
------------------------------------
-:func:`resolve_rng` deliberately refuses integer seeds, but Phases 5 and 6 read
-seeds from a CLI flag, a JSON run description or a config file, where a seed
-*is* a bare integer. :func:`seed_to_generator` is the one sanctioned place where
-such a scalar is turned into a generator::
-
-    generator = seed_to_generator(args.seed)      # once, at the boundary
-    result = run_experiment(..., rng=generator)   # threaded from there on
-
-Doing it anywhere else -- in particular by calling ``numpy.random.default_rng``
-inline at each call site -- is what D3 forbids, because it reintroduces exactly
-the restarted-stream bug ``resolve_rng`` exists to prevent.
-
-Qubit ordering
---------------
-Not applicable in this module (no quantum state is handled here), but the
-project-wide convention is Qiskit little-endian: qubit 0 is the rightmost
-character of a bitstring label.
+Every random function takes a keyword-only ``rng``. :func:`resolve_rng` accepts
+a generator or ``None``; :func:`seed_to_generator` turns a scalar seed from a
+CLI/config into a generator, once, at the boundary.
 """
 
 from __future__ import annotations
@@ -55,37 +13,13 @@ __all__ = ["resolve_rng", "seed_to_generator"]
 
 
 def resolve_rng(rng: np.random.Generator | None = None) -> np.random.Generator:
-    """Return a usable :class:`numpy.random.Generator`.
-
-    This is the only sanctioned way to obtain randomness in the project.
-
-    Parameters
-    ----------
-    rng : numpy.random.Generator or None, optional
-        An existing generator to use as-is, or ``None`` to create a fresh,
-        entropy-seeded generator via :func:`numpy.random.default_rng`.
-
-    Returns
-    -------
-    numpy.random.Generator
-        ``rng`` itself when one was supplied (the *same* object, never a copy,
-        so that sequential draws advance a single stream), otherwise a new
-        generator.
+    """Return ``rng`` itself (same object, never a copy), or a fresh generator for ``None``.
 
     Raises
     ------
     TypeError
-        If ``rng`` is neither ``None`` nor a :class:`numpy.random.Generator`.
-        Integer seeds and the legacy :class:`numpy.random.RandomState` are
-        rejected explicitly with instructions, because silently accepting a
-        seed would restart the stream on every call and produce correlated
-        "random" draws.
-
-    Notes
-    -----
-    The supplied generator is returned by identity rather than by copy. Advancing
-    it in a callee is intentional: one seeded generator threaded through an
-    experiment yields one reproducible stream.
+        For anything else; integer seeds and ``RandomState`` are rejected because
+        re-seeding per call would restart the stream.
 
     Examples
     --------
@@ -125,56 +59,17 @@ def resolve_rng(rng: np.random.Generator | None = None) -> np.random.Generator:
 
 
 def seed_to_generator(seed: int | None) -> np.random.Generator:
-    """Convert an untrusted scalar seed into a generator, once, at the boundary.
+    """Convert a scalar seed from outside (CLI, JSON, config) into a generator.
 
-    This is **the** sanctioned boundary between scalar seeds -- the form a seed
-    arrives in from a CLI flag, a JSON run description or a config file -- and
-    the generator discipline of D3. Everything downstream of this call takes a
-    :class:`numpy.random.Generator` and threads it, so that one seed produces one
-    continuous, reproducible stream.
-
-    Use it **once per run**, at the point where the outside world hands over a
-    number::
-
-        generator = seed_to_generator(config["seed"])   # boundary
-        for trial in range(trials):                     # one stream throughout
-            outcome = projective_measure(state, 0, PauliBasis.Z, rng=generator)
-
-    Never call it inside a loop or per call site. That would restart the stream
-    on every iteration and produce a run of identical "random" draws -- the
-    failure mode :func:`resolve_rng` refuses integer seeds to prevent. If you
-    already hold a generator, pass it to :func:`resolve_rng`; this function
-    rejects generators on purpose, so that the two entry points cannot be
-    confused for each other.
-
-    Parameters
-    ----------
-    seed : int or None
-        A non-negative integer seed, or ``None`` for fresh entropy (the
-        interactive-demo path; an unseeded run is not reproducible and must not
-        be used for reported numbers).
-
-    Returns
-    -------
-    numpy.random.Generator
-        A freshly constructed generator, deterministic in ``seed``.
+    Call it once per run, never per call site; generators are rejected so the
+    two entry points cannot be confused.
 
     Raises
     ------
     ValueError
-        If ``seed`` is a negative integer. NumPy's own seed sequence rejects
-        these too; the message here names the fix.
+        If ``seed`` is negative.
     TypeError
-        If ``seed`` is a :class:`bool` (which is an ``int`` in Python but never a
-        meaningful seed), a :class:`numpy.random.Generator` (use
-        :func:`resolve_rng`), or any other non-integer such as a float or a
-        string. Strings from a CLI must be converted with :func:`int` by the
-        caller, so that a malformed ``--seed`` value fails at the argument
-        parser rather than silently seeding something else.
-
-    See Also
-    --------
-    resolve_rng : The in-project entry point, which takes a generator or ``None``.
+        If ``seed`` is a bool, a generator, or any non-integer.
 
     Examples
     --------
