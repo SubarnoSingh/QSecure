@@ -1,0 +1,54 @@
+{
+ "_comment": [
+  "Constants the screen needs that no API endpoint returns, shipped as DATA",
+  "rather than computed in the browser.",
+  "",
+  "The frontend never derives a number. It does not forbid the frontend",
+  "reading one: the difference that matters is whether a figure on the screen has",
+  "a source in Python, and every figure in this file does. The CHSH bounds",
+  "come from math.sqrt, and the calibration table is the one stated in the",
+  "docstring of Detection.channel_error_rate -- a docstring that runs as a",
+  "doctest, so the table there cannot drift from what the code does. A",
+  "number here that drifts from its source is a bug in this file.",
+  "",
+  "Nothing in this file is a per-run quantity. Per-run figures come from",
+  "/api/run and from nowhere else."
+ ],
+ "version": 1,
+ "chsh": {
+  "kind": "definition",
+  "classical_bound": 2.0,
+  "tsirelson_bound": 2.8284271247461903,
+  "note": "Reference lines on the CHSH chart. The classical bound is the CHSH inequality's own value and the Tsirelson bound is 2*sqrt(2); neither is a threshold this detector applies. Whether a link's Bell test failed is decided by the channel family in Python and appears in Signals -- never by comparing a bar to a line on a chart.",
+  "domain": {
+   "minimum": -4.0,
+   "maximum": 4.0,
+   "note": "The statistic's definitional range: four correlators, each in [-1, 1]. Used as the chart's axis so that no axis maximum is ever chosen from the data."
+  }
+ },
+ "noise_null_calibration": {
+  "kind": "measured",
+  "source": "Experiment 'noise', 6 cells x 30 trials at L = 384, check_fraction 0.25.",
+  "regenerate": "the 'noise' experiment in qsecure.eval.experiments, run and then reduced with qsecure.eval.reduce",
+  "key_length": 384,
+  "check_fraction": 0.25,
+  "what": "Honest runs over a depolarising wire, scored against detect()'s default noiseless null (channel_error_rate = 0.0). The denominator is EVERY run at that level, not only the runs both verifiers accepted: at the design level 16 of the 60 verifier verdicts are rejections, because a link that noisy also moves the signature. Not a detection rate for any adversary: there is no adversary in any of these runs.",
+  "runs_per_level": 30,
+  "levels": [
+   {"noise": 0.0, "detected": 0},
+   {"noise": 0.0025, "detected": 14},
+   {"noise": 0.005, "detected": 23},
+   {"noise": 0.01, "detected": 28},
+   {"noise": 0.015, "detected": 30},
+   {"noise": 0.03125, "detected": 30}
+  ],
+  "with_true_rate_passed": "0/30 at every level when BOTH of detect()'s nulls are stated: the link's true matched-position error rate as channel_error_rate, AND the link's Werner strength as tolerated_depolarising. This table is the RATE family's. Correcting this null alone does not clear an honest noisy run.",
+  "design_noise_level": 0.03125,
+  "design_noise_note": "0.03125 is 2*s_a, the design noise level, and it fires on every run out of thirty. The honest baseline over a realistic link is the single most likely thing on this dashboard to be misread.",
+  "second_null_note": "That calibration is the RATE family. The CHANNEL family has its own null, tolerated_depolarising, also defaulting to a perfect resource, and stating only the first leaves an honest noisy run firing: measured over twelve seeds at L = 192, check_fraction = 0.25, link strength 0.03125 -- 12/12 detected with both nulls at zero, 12/12 with only channel_error_rate corrected, 0/12 with both stated. THE VERIFIERS DO NOT MOVE WITH THE NULLS AT ALL: their outcomes are the protocol's and the nulls are the detector's, and over those twelve seeds the pair of outcomes is identical under all three settings -- both accept on 7 seeds and Bob rejects the honest signature on 5, which is what a link at the design noise level does to a signature and is a separate fact from anything the detector said."
+ },
+ "false_negative": {
+  "exists": false,
+  "note": "There is no false-negative bound in this project and none can be derived from a transcript. Nothing on this screen may imply one: a quiet detector is not a proof that nothing happened."
+ }
+}
