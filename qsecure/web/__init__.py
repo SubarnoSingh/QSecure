@@ -1,6 +1,13 @@
 """The dashboard's backend -- one process, one command, no network.
+
+>>> from qsecure.web import create_app
+>>> from fastapi.testclient import TestClient
+>>> client = TestClient(create_app())
+>>> client.get("/api/health").json()
+{'ok': True, 'version': '0.1.0'}
 """
 
+from qsecure.web.api import STATIC_DIR, RunBody, create_app, defaults_payload
 from qsecure.web.catalogue import (
     ATTACK_KEYS,
     ATTACKS,
@@ -33,11 +40,15 @@ __all__ = [
     "LIVE_KEY_LENGTH_MAX",
     "MAX_CONCURRENT_RUNS",
     "MESSAGE_BIT",
+    "STATIC_DIR",
     "AttackSpec",
     "RequestRefused",
+    "RunBody",
     "RunRequest",
     "RunResult",
     "attack_spec",
+    "create_app",
+    "defaults_payload",
     "ground_truth_for",
     "limits_payload",
     "roster_payload",

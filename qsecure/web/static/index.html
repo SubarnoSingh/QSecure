@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--
+  QSecure dashboard frontend. Nothing is fetched from a network; paths are
+  root-absolute under /static because this page is served at /.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>QSecure: catching attacks on quantum digital signatures</title>
+    <link rel="icon" type="image/png" href="/static/img/qsecure-mark.png" />
+    <link rel="stylesheet" href="/static/css/app.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <p class="brand">
+        <img class="brand-mark" src="/static/img/qsecure-mark.png" alt="" width="192" height="192" />
+        <span class="brand-text">
+          <span class="brand-name">QSecure</span>
+          <span class="brand-line">Catching attacks on quantum digital signatures</span>
+        </span>
+      </p>
+      <nav class="tabs" id="pages" aria-label="Views"></nav>
+      <div class="masthead-tools">
+        <span class="mode-chip" id="mode-chip">Starting</span>
+        <button class="theme-toggle" id="theme" type="button"></button>
+        <button class="run-action" id="run-link" type="button">Run a session</button>
+      </div>
+    </header>
+
+    <p class="visually-hidden">
+      Python computes every number on this page and the API sends it; the
+      browser only formats and draws what arrives.
+    </p>
+
+    <div class="frame" id="frame">
+      <aside class="rail" id="scenarios" aria-label="Scenarios"></aside>
+      <main class="view" id="view"><p class="loading">Loading the recorded runs</p></main>
+    </div>
+
+    <footer class="colophon">
+      <p class="colophon-brand">QSecure</p>
+      <p>
+        The browser computes nothing. Every figure comes from
+        <code>detect()</code> or from the transcript through the JSON API, and
+        where a number is missing the page says so instead of filling one in.
+        Proven numbers rest on a stated null and a named inequality; measured
+        numbers come from counting, and the page prints each one beside its
+        sample size. This page offers
+        no false-negative bound, because a transcript can't supply one.
+        Nothing here loads from outside the server that serves this page.
+      </p>
+    </footer>
+
+    <script src="/static/js/format.js"></script>
+    <script src="/static/js/contract.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/render.js"></script>
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>
